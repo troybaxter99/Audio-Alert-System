@@ -1,6 +1,8 @@
 from subprocess import call
 from os import walk
 
+import pygame
+
 class AUDIO:
     # espeak commands
     espeak_beg = 'espeak '
@@ -16,6 +18,16 @@ class AUDIO:
     def __init__(self, newAudioLocation = "/home/pi/Audio-Alert-System/Audio-Files/"):
         self.audioLoc = newAudioLocation
         self.gap = 0 # 0 centi-second gap between each word
+        pygame.mixer.init()
+    
+    
+    # Sets Volume of sound to be played from speaker
+    # Volume must be a value between 0 to 100
+    def set_volume(self, volume):
+        speaker_volume = volume/100 # Converts volume from % to decimal
+        pygame.mixer.music.set_volume(speaker_volume)
+        self.volume = speaker_volume
+    
     
     # This function's purpose is to allow the user to enter a desired delay between each word
     # set_espeak_gap takes a time value in ms and sets the gap time in centiseconds
@@ -36,12 +48,14 @@ class AUDIO:
     # This function's purpose is to play a called audio file.
     # ***This audio file must exist***
     def play_audio(self, audioFile):
-        # Create command to be sent to the terminal
-        audio_cmd = self.audioLoc + audioFile
-        command = self.aplay_cmd + audio_cmd
+        # Load and Play Audio
+        pygame.mixer.music.load(self.audioLoc + audioFile)
+        pygame.mixer.music.play()
         
-        # Call terminal with desired audio file
-        call([command], shell = True)
+        # If audio is button_press audio, wait until audio is completed
+        if (audioFile == "button_press.wav"):
+            while pygame.mixer.music.get_busy() == True:
+                continue
             
     # The purpose of this function is to list all .wav files in a folder  
     def list_audio(self):
